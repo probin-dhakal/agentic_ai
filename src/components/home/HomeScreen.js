@@ -1,6 +1,19 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Leaf, Plus, Camera, FileText, Pill, Cloud, MessageCircle, MoveHorizontal as MoreHorizontal } from 'lucide-react-native';
+import { 
+  Leaf, 
+  Plus, 
+  Camera, 
+  FileText, 
+  Pill, 
+  Cloud, 
+  MessageCircle, 
+  MoveHorizontal as MoreHorizontal,
+  Calendar,
+  Building2,
+  TrendingUp,
+  Mic
+} from 'lucide-react-native';
 import { useApp } from '../../contexts/AppContext';
 import { getTranslation } from '../../utils/translations';
 
@@ -15,6 +28,14 @@ const HomeScreen = ({ onNavigate }) => {
 
   const handleVoiceInput = () => {
     onNavigate('voiceInput');
+  };
+
+  const handleCropCalendar = () => {
+    onNavigate('cropCalendar');
+  };
+
+  const handleGovernmentSchemes = () => {
+    onNavigate('governmentSchemes');
   };
 
   return (
@@ -56,6 +77,37 @@ const HomeScreen = ({ onNavigate }) => {
           </ScrollView>
         </View>
 
+        {/* Quick Action Cards */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{getTranslation(state.selectedLanguage, 'quickActions')}</Text>
+          <View style={styles.actionGrid}>
+            <TouchableOpacity style={[styles.actionCard, styles.primaryAction]} onPress={handleTakePicture}>
+              <Camera size={32} color="#FFFFFF" />
+              <Text style={styles.primaryActionText}>{getTranslation(state.selectedLanguage, 'diagnosePlant')}</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.actionCard} onPress={handleVoiceInput}>
+              <Mic size={28} color="#22C55E" />
+              <Text style={styles.actionText}>{getTranslation(state.selectedLanguage, 'askQuestion')}</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.actionCard} onPress={() => onNavigate('market')}>
+              <TrendingUp size={28} color="#3B82F6" />
+              <Text style={styles.actionText}>{getTranslation(state.selectedLanguage, 'marketPrices')}</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.actionCard} onPress={handleGovernmentSchemes}>
+              <Building2 size={28} color="#8B5CF6" />
+              <Text style={styles.actionText}>{getTranslation(state.selectedLanguage, 'govSchemes')}</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.actionCard} onPress={handleCropCalendar}>
+              <Calendar size={28} color="#F59E0B" />
+              <Text style={styles.actionText}>{getTranslation(state.selectedLanguage, 'cropCalendar')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Weather Card */}
         <View style={styles.weatherCard}>
           <View style={styles.weatherHeader}>
@@ -75,32 +127,22 @@ const HomeScreen = ({ onNavigate }) => {
         </View>
 
         {/* Heal Your Crop Section */}
+        {/* Crop Health Status */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{getTranslation(state.selectedLanguage, 'healYourCrop')}</Text>
-          <View style={styles.healFlow}>
-            <View style={styles.flowStep}>
-              <Camera size={32} color="#22C55E" />
-              <Text style={styles.flowText}>{getTranslation(state.selectedLanguage, 'takePicture')}</Text>
+          <Text style={styles.sectionTitle}>{getTranslation(state.selectedLanguage, 'cropHealthStatus')}</Text>
+          <View style={styles.healthStatusCard}>
+            <View style={styles.healthIndicator}>
+              <View style={[styles.healthDot, styles.healthGood]} />
+              <Text style={styles.healthText}>{getTranslation(state.selectedLanguage, 'overallHealthy')}</Text>
             </View>
-            <View style={styles.flowArrow}>
-              <Text style={styles.arrowText}>→</Text>
-            </View>
-            <View style={styles.flowStep}>
-              <FileText size={32} color="#3B82F6" />
-              <Text style={styles.flowText}>{getTranslation(state.selectedLanguage, 'seeDiagnosis')}</Text>
-            </View>
-            <View style={styles.flowArrow}>
-              <Text style={styles.arrowText}>→</Text>
-            </View>
-            <View style={styles.flowStep}>
-              <Pill size={32} color="#EF4444" />
-              <Text style={styles.flowText}>{getTranslation(state.selectedLanguage, 'getMedicine')}</Text>
-            </View>
+            <Text style={styles.healthSubtext}>
+              {getTranslation(state.selectedLanguage, 'lastCheckDesc')}
+            </Text>
+            <TouchableOpacity style={styles.checkNowButton} onPress={handleTakePicture}>
+              <Camera size={16} color="#22C55E" />
+              <Text style={styles.checkNowText}>{getTranslation(state.selectedLanguage, 'checkNow')}</Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.takePictureButton} onPress={handleTakePicture}>
-            <Camera size={20} color="#FFFFFF" />
-            <Text style={styles.takePictureText}>{getTranslation(state.selectedLanguage, 'takePicture')}</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Manage Fields Section */}
@@ -201,6 +243,81 @@ const styles = StyleSheet.create({
   cropName: {
     fontSize: 12,
     color: '#374151',
+    textAlign: 'center',
+    marginTop: 8,
+    fontWeight: '500',
+  },
+  actionGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  actionCard: {
+    width: '48%',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  primaryAction: {
+    backgroundColor: '#22C55E',
+    width: '100%',
+    marginBottom: 20,
+  },
+  primaryActionText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 8,
+  },
+  healthStatusCard: {
+    backgroundColor: '#F0FDF4',
+    borderRadius: 16,
+    padding: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#22C55E',
+  },
+  healthIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  healthDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 8,
+  },
+  healthGood: {
+    backgroundColor: '#22C55E',
+  },
+  healthText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#166534',
+  },
+  healthSubtext: {
+    fontSize: 14,
+    color: '#16A34A',
+    marginBottom: 15,
+  },
+  checkNowButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  checkNowText: {
+    fontSize: 14,
+    color: '#22C55E',
+    fontWeight: '600',
+    marginLeft: 4,
     textAlign: 'center',
   },
   addCropButton: {

@@ -11,6 +11,7 @@ import {
 import { Camera, ArrowLeft, Upload } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { callGeminiAPI } from '../config/gemini';
+import { offlineUtils } from './OfflineManager';
 import { useApp } from '../contexts/AppContext';
 import { getTranslation } from '../utils/translations';
 
@@ -79,9 +80,19 @@ const CropHealthScreen = ({ onBack }) => {
       setIsAnalyzing(true);
       setDiagnosis('');
       
-      const prompt = "Analyze this crop image for diseases, pests, or health issues. Provide a detailed diagnosis and treatment recommendations.";
-      const result = await callGeminiAPI(prompt, imageBase64);
-      setDiagnosis(result);
+      try {
+        const prompt = "Analyze this crop image for diseases, pests, or health issues. Provide a detailed diagnosis and treatment recommendations.";
+        const result = await callGeminiAPI(prompt, imageBase64);
+        setDiagnosis(result);
+      } catch (error) {
+        // If API fails, queue for offline processing
+        await offlineUtils.addToQueue({
+          type: 'diagnosis',
+          data: { image: imageBase64, prompt: "Analyze crop for diseases" }
+        });
+        
+        setDiagnosis(getTranslation(state.selectedLanguage, 'diagnosisQueuedOffline'));
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to analyze the image. Please try again.');
     } finally {

@@ -12,6 +12,7 @@ import {
 import { Mic, Send, ArrowLeft, Globe } from 'lucide-react-native';
 import * as Speech from 'expo-speech';
 import { callGeminiAPI } from '../config/gemini';
+import { offlineUtils } from './OfflineManager';
 import { useApp } from '../contexts/AppContext';
 import { getTranslation } from '../utils/translations';
 
@@ -43,15 +44,27 @@ const VoiceInputScreen = ({ onBack }) => {
 
     try {
       setIsLoading(true);
-      const aiResponse = await callGeminiAPI(inputText);
-      setResponse(aiResponse);
       
-      // Text-to-speech for the response
-      Speech.speak(aiResponse, {
-        language: 'en',
-        pitch: 1.0,
-        rate: 0.8,
-      });
+      // Check if online, if not queue the request
+      try {
+        const aiResponse = await callGeminiAPI(inputText);
+        setResponse(aiResponse);
+        
+        // Text-to-speech for the response
+        Speech.speak(aiResponse, {
+          language: 'en',
+          pitch: 1.0,
+          rate: 0.8,
+        });
+      } catch (error) {
+        // If API fails, queue for offline processing
+        await offlineUtils.addToQueue({
+          type: 'voice_query',
+          data: { query: inputText, language: currentLanguage }
+        });
+        
+        setResponse(getTranslation(state.selectedLanguage, 'queryQueuedOffline'));
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to get AI response');
     } finally {

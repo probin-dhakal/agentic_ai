@@ -8,8 +8,11 @@ import HomeScreen from './src/components/home/HomeScreen';
 import VoiceInputScreen from './src/components/VoiceInputScreen';
 import CropHealthScreen from './src/components/CropHealthScreen';
 import MarketPricesScreen from './src/components/MarketPricesScreen';
+import CropCalendarScreen from './src/components/CropCalendarScreen';
+import GovernmentSchemesScreen from './src/components/GovernmentSchemesScreen';
 import PlaceholderScreen from './src/components/PlaceholderScreen';
 import BottomNavigation from './src/components/BottomNavigation';
+import OfflineManager from './src/components/OfflineManager';
 
 const AppContent = () => {
   const { state } = useApp();
@@ -57,6 +60,10 @@ const AppContent = () => {
         return <CropHealthScreen onBack={handleBack} />;
       case 'market':
         return <MarketPricesScreen onBack={handleBack} />;
+      case 'cropCalendar':
+        return <CropCalendarScreen onBack={handleBack} />;
+      case 'governmentSchemes':
+        return <GovernmentSchemesScreen onBack={handleBack} />;
       case 'placeholder':
         return (
           <PlaceholderScreen 
@@ -74,6 +81,7 @@ const AppContent = () => {
 
   return (
     <View style={styles.container}>
+      <OfflineManager />
       {renderScreen()}
       {(currentScreen === 'home' || currentScreen === 'market' || currentScreen === 'placeholder') && (
         <BottomNavigation activeTab={activeTab} onTabPress={handleTabPress} />
