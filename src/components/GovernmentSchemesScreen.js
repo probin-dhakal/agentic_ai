@@ -8,7 +8,7 @@ import {
   TextInput,
   Alert 
 } from 'react-native';
-import { ArrowLeft, Search, Building2, CheckCircle, Clock, FileText, ExternalLink } from 'lucide-react-native';
+import { ArrowLeft, Search, Building2, CircleCheck as CheckCircle, Clock, FileText, ExternalLink } from 'lucide-react-native';
 import { useApp } from '../contexts/AppContext';
 import { getTranslation } from '../utils/translations';
 

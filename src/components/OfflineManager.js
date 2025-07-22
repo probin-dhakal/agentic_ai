@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import { Wifi, WifiOff, Upload, CheckCircle } from 'lucide-react-native';
+import { Wifi, WifiOff, Upload, CircleCheck as CheckCircle } from 'lucide-react-native';
 import { useApp } from '../contexts/AppContext';
 import { getTranslation } from '../utils/translations';
 

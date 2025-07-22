@@ -7,7 +7,7 @@ import {
   ScrollView,
   Alert 
 } from 'react-native';
-import { ArrowLeft, Calendar, Droplets, Sun, Thermometer, AlertTriangle } from 'lucide-react-native';
+import { ArrowLeft, Calendar, Droplets, Sun, Thermometer, TriangleAlert as AlertTriangle } from 'lucide-react-native';
 import { useApp } from '../contexts/AppContext';
 import { getTranslation } from '../utils/translations';
 
