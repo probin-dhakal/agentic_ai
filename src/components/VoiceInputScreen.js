@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -7,9 +7,11 @@ import {
   TextInput, 
   ScrollView,
   ActivityIndicator,
-  Alert 
+  Alert,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
-import { Mic, Send, ArrowLeft, Globe } from 'lucide-react-native';
+import { Mic, Send, ArrowLeft, Globe, MicOff, Copy, Volume2 } from 'lucide-react-native';
 import * as Speech from 'expo-speech';
 import { callGeminiAPI } from '../config/gemini';
 import { offlineUtils } from './OfflineManager';
@@ -21,8 +23,23 @@ const VoiceInputScreen = ({ onBack }) => {
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [response, setResponse] = useState('');
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      type: 'assistant',
+      content: getTranslation(state.selectedLanguage, 'welcomeMessage'),
+      timestamp: new Date()
+    }
+  ]);
   const [currentLanguage, setCurrentLanguage] = useState(state.selectedLanguage);
+  const scrollViewRef = useRef(null);
+
+  useEffect(() => {
+    // Auto-scroll to bottom when new messages are added
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  }, [messages]);
 
   const handleVoiceInput = async () => {
     try {
@@ -30,7 +47,14 @@ const VoiceInputScreen = ({ onBack }) => {
       // In a real app, you would implement speech-to-text here
       // For now, we'll simulate it
       setTimeout(() => {
-        setInputText('What is the best time to sow wheat?');
+        const sampleQuestions = [
+          'What is the best time to sow wheat?',
+          'How to treat tomato leaf curl disease?',
+          'What are the current market prices for rice?',
+          'Which government schemes are available for farmers?'
+        ];
+        const randomQuestion = sampleQuestions[Math.floor(Math.random() * sampleQuestions.length)];
+        setInputText(randomQuestion);
         setIsListening(false);
       }, 2000);
     } catch (error) {
@@ -42,34 +66,95 @@ const VoiceInputScreen = ({ onBack }) => {
   const handleSubmit = async () => {
     if (!inputText.trim()) return;
 
+    const userMessage = {
+      id: Date.now(),
+      type: 'user',
+      content: inputText.trim(),
+      timestamp: new Date()
+    };
+
+    // Add user message to chat
+    setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputText.trim();
+    setInputText('');
+    setIsLoading(true);
+
     try {
-      setIsLoading(true);
-      
-      // Check if online, if not queue the request
+      // Add typing indicator
+      const typingMessage = {
+        id: Date.now() + 1,
+        type: 'assistant',
+        content: '',
+        isTyping: true,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, typingMessage]);
+
+      let aiResponse;
       try {
-        const aiResponse = await callGeminiAPI(inputText);
-        setResponse(aiResponse);
-        
-        // Text-to-speech for the response
-        Speech.speak(aiResponse, {
-          language: 'en',
-          pitch: 1.0,
-          rate: 0.8,
-        });
+        aiResponse = await callGeminiAPI(currentInput);
       } catch (error) {
         // If API fails, queue for offline processing
         await offlineUtils.addToQueue({
           type: 'voice_query',
-          data: { query: inputText, language: currentLanguage }
+          data: { query: currentInput, language: currentLanguage }
         });
         
-        setResponse(getTranslation(state.selectedLanguage, 'queryQueuedOffline'));
+        aiResponse = getTranslation(state.selectedLanguage, 'queryQueuedOffline');
       }
+
+      // Remove typing indicator and add actual response
+      setMessages(prev => {
+        const filtered = prev.filter(msg => !msg.isTyping);
+        return [...filtered, {
+          id: Date.now() + 2,
+          type: 'assistant',
+          content: aiResponse,
+          timestamp: new Date()
+        }];
+      });
+
+      // Text-to-speech for the response
+      Speech.speak(aiResponse, {
+        language: 'en',
+        pitch: 1.0,
+        rate: 0.8,
+      });
     } catch (error) {
-      Alert.alert('Error', 'Failed to get AI response');
+      // Remove typing indicator and show error
+      setMessages(prev => {
+        const filtered = prev.filter(msg => !msg.isTyping);
+        return [...filtered, {
+          id: Date.now() + 2,
+          type: 'assistant',
+          content: getTranslation(state.selectedLanguage, 'errorMessage'),
+          timestamp: new Date(),
+          isError: true
+        }];
+      });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleQuickQuestion = (question) => {
+    setInputText(question);
+  };
+
+  const handleCopyMessage = (content) => {
+    // In a real app, you would use Clipboard API
+    Alert.alert(
+      getTranslation(state.selectedLanguage, 'copied'),
+      getTranslation(state.selectedLanguage, 'messageCopied')
+    );
+  };
+
+  const handleSpeakMessage = (content) => {
+    Speech.speak(content, {
+      language: 'en',
+      pitch: 1.0,
+      rate: 0.8,
+    });
   };
 
   const toggleLanguage = () => {
@@ -79,45 +164,154 @@ const VoiceInputScreen = ({ onBack }) => {
     setCurrentLanguage(languages[nextIndex]);
   };
 
+  const renderMessage = (message) => {
+    const isUser = message.type === 'user';
+    const isTyping = message.isTyping;
+    const isError = message.isError;
+
+    return (
+      <View key={message.id} style={[
+        styles.messageContainer,
+        isUser ? styles.userMessageContainer : styles.assistantMessageContainer
+      ]}>
+        {!isUser && (
+          <View style={styles.avatarContainer}>
+            <Text style={styles.avatarText}>🤖</Text>
+          </View>
+        )}
+        
+        <View style={[
+          styles.messageBubble,
+          isUser ? styles.userBubble : styles.assistantBubble,
+          isError && styles.errorBubble
+        ]}>
+          {isTyping ? (
+            <View style={styles.typingIndicator}>
+              <ActivityIndicator size="small" color="#6B7280" />
+              <Text style={styles.typingText}>
+                {getTranslation(state.selectedLanguage, 'aiTyping')}
+              </Text>
+            </View>
+          ) : (
+            <>
+              <Text style={[
+                styles.messageText,
+                isUser ? styles.userMessageText : styles.assistantMessageText,
+                isError && styles.errorMessageText
+              ]}>
+                {message.content}
+              </Text>
+              
+              {!isUser && !isError && (
+                <View style={styles.messageActions}>
+                  <TouchableOpacity 
+                    style={styles.actionButton}
+                    onPress={() => handleCopyMessage(message.content)}
+                  >
+                    <Copy size={14} color="#6B7280" />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.actionButton}
+                    onPress={() => handleSpeakMessage(message.content)}
+                  >
+                    <Volume2 size={14} color="#6B7280" />
+                  </TouchableOpacity>
+                </View>
+              )}
+            </>
+          )}
+        </View>
+        
+        {isUser && (
+          <View style={styles.avatarContainer}>
+            <Text style={styles.avatarText}>👨‍🌾</Text>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
           <ArrowLeft size={24} color="#374151" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{getTranslation(state.selectedLanguage, 'aiAssistant')}</Text>
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle}>{getTranslation(state.selectedLanguage, 'aiAssistant')}</Text>
+          <Text style={styles.headerSubtitle}>{getTranslation(state.selectedLanguage, 'onlineStatus')}</Text>
+        </View>
         <TouchableOpacity style={styles.languageButton} onPress={toggleLanguage}>
           <Globe size={20} color="#22C55E" />
-          <Text style={styles.languageText}>{getTranslation(state.selectedLanguage, 'language')}</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        {/* Voice Input Section */}
-        <View style={styles.voiceSection}>
+      {/* Chat Messages */}
+      <ScrollView 
+        ref={scrollViewRef}
+        style={styles.chatContainer}
+        contentContainerStyle={styles.chatContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {messages.map(renderMessage)}
+      </ScrollView>
+
+      {/* Quick Actions */}
+      {messages.length <= 1 && (
+        <View style={styles.quickActions}>
+          <Text style={styles.quickActionsTitle}>{getTranslation(state.selectedLanguage, 'quickQuestions')}</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <TouchableOpacity 
+              style={styles.quickActionChip}
+              onPress={() => handleQuickQuestion('What diseases affect tomato plants?')}
+            >
+              <Text style={styles.quickActionText}>{getTranslation(state.selectedLanguage, 'tomatoDiseases')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.quickActionChip}
+              onPress={() => handleQuickQuestion('Current market price of wheat')}
+            >
+              <Text style={styles.quickActionText}>{getTranslation(state.selectedLanguage, 'wheatPrices')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.quickActionChip}
+              onPress={() => handleQuickQuestion('Government schemes for farmers')}
+            >
+              <Text style={styles.quickActionText}>{getTranslation(state.selectedLanguage, 'governmentSchemes')}</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Input Area */}
+      <View style={styles.inputContainer}>
+        <View style={styles.inputRow}>
           <TouchableOpacity 
-            style={[styles.micButton, isListening && styles.micButtonActive]} 
+            style={[styles.voiceButton, isListening && styles.voiceButtonActive]} 
             onPress={handleVoiceInput}
             disabled={isLoading}
           >
-            <Mic size={40} color={isListening ? "#FFFFFF" : "#22C55E"} />
+            {isListening ? (
+              <MicOff size={20} color="#FFFFFF" />
+            ) : (
+              <Mic size={20} color="#22C55E" />
+            )}
           </TouchableOpacity>
-          <Text style={styles.voiceText}>
-            {isListening ? getTranslation(state.selectedLanguage, 'listening') : getTranslation(state.selectedLanguage, 'clickToSpeak')}
-          </Text>
-        </View>
-
-        {/* Text Input */}
-        <View style={styles.textInputSection}>
+          
           <TextInput
             style={styles.textInput}
-            placeholder={getTranslation(state.selectedLanguage, 'writeToKnow')}
+            placeholder={getTranslation(state.selectedLanguage, 'typeMessage')}
             value={inputText}
             onChangeText={setInputText}
             multiline
-            numberOfLines={3}
+            maxLength={500}
+            editable={!isLoading}
           />
+          
           <TouchableOpacity 
             style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]} 
             onPress={handleSubmit}
@@ -126,49 +320,17 @@ const VoiceInputScreen = ({ onBack }) => {
             <Send size={20} color={!inputText.trim() ? "#9CA3AF" : "#FFFFFF"} />
           </TouchableOpacity>
         </View>
-
-        {/* Loading State */}
-        {isLoading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#22C55E" />
-            <Text style={styles.loadingText}>{getTranslation(state.selectedLanguage, 'gettingResponse')}</Text>
+        
+        {isListening && (
+          <View style={styles.listeningIndicator}>
+            <ActivityIndicator size="small" color="#22C55E" />
+            <Text style={styles.listeningText}>
+              {getTranslation(state.selectedLanguage, 'listening')}
+            </Text>
           </View>
         )}
-
-        {/* Response Section */}
-        {response && !isLoading && (
-          <View style={styles.responseSection}>
-            <Text style={styles.responseTitle}>{getTranslation(state.selectedLanguage, 'aiResponse')}</Text>
-            <View style={styles.responseCard}>
-              <Text style={styles.responseText}>{response}</Text>
-            </View>
-          </View>
-        )}
-
-        {/* Quick Actions */}
-        <View style={styles.quickActions}>
-          <Text style={styles.quickActionsTitle}>{getTranslation(state.selectedLanguage, 'quickQuestions')}</Text>
-          <TouchableOpacity 
-            style={styles.quickActionButton}
-            onPress={() => setInputText('What diseases affect tomato plants?')}
-          >
-            <Text style={styles.quickActionText}>{getTranslation(state.selectedLanguage, 'tomatoDiseases')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.quickActionButton}
-            onPress={() => setInputText('Current market price of wheat')}
-          >
-            <Text style={styles.quickActionText}>{getTranslation(state.selectedLanguage, 'wheatPrices')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.quickActionButton}
-            onPress={() => setInputText('Government schemes for farmers')}
-          >
-            <Text style={styles.quickActionText}>{getTranslation(state.selectedLanguage, 'governmentSchemes')}</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -191,134 +353,195 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
   },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#1F2937',
   },
+  headerSubtitle: {
+    fontSize: 12,
+    color: '#10B981',
+    marginTop: 2,
+  },
   languageButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    padding: 8,
     backgroundColor: '#F0FDF4',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
     borderRadius: 20,
   },
-  languageText: {
-    fontSize: 12,
-    color: '#22C55E',
-    marginLeft: 4,
-    fontWeight: '600',
-  },
-  content: {
+  chatContainer: {
     flex: 1,
+    backgroundColor: '#F9FAFB',
   },
-  contentContainer: {
-    paddingHorizontal: 20,
+  chatContent: {
     paddingVertical: 20,
   },
-  voiceSection: {
-    alignItems: 'center',
-    marginBottom: 30,
+  messageContainer: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    paddingHorizontal: 16,
   },
-  micButton: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+  userMessageContainer: {
+    justifyContent: 'flex-end',
+  },
+  assistantMessageContainer: {
+    justifyContent: 'flex-start',
+  },
+  avatarContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 8,
+  },
+  avatarText: {
+    fontSize: 16,
+  },
+  messageBubble: {
+    maxWidth: '75%',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 18,
+  },
+  userBubble: {
+    backgroundColor: '#22C55E',
+    borderBottomRightRadius: 4,
+  },
+  assistantBubble: {
+    backgroundColor: '#FFFFFF',
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  errorBubble: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+  },
+  messageText: {
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  userMessageText: {
+    color: '#FFFFFF',
+  },
+  assistantMessageText: {
+    color: '#374151',
+  },
+  errorMessageText: {
+    color: '#DC2626',
+  },
+  typingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  typingText: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginLeft: 8,
+    fontStyle: 'italic',
+  },
+  messageActions: {
+    flexDirection: 'row',
+    marginTop: 8,
+    justifyContent: 'flex-end',
+  },
+  actionButton: {
+    padding: 4,
+    marginLeft: 8,
+  },
+  quickActions: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  quickActionsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 12,
+  },
+  quickActionChip: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  quickActionText: {
+    fontSize: 14,
+    color: '#374151',
+  },
+  inputContainer: {
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingBottom: 20,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
+  voiceButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#F0FDF4',
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: '#22C55E',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 15,
+    marginRight: 12,
   },
-  micButtonActive: {
+  voiceButtonActive: {
     backgroundColor: '#22C55E',
     borderColor: '#16A34A',
-  },
-  voiceText: {
-    fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
-  },
-  textInputSection: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginBottom: 20,
   },
   textInput: {
     flex: 1,
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 12,
-    paddingHorizontal: 15,
+    borderRadius: 22,
+    paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
     maxHeight: 100,
-    marginRight: 10,
+    marginRight: 12,
+    backgroundColor: '#F9FAFB',
   },
   sendButton: {
-    backgroundColor: '#22C55E',
     width: 44,
     height: 44,
     borderRadius: 22,
+    backgroundColor: '#22C55E',
     justifyContent: 'center',
     alignItems: 'center',
   },
   sendButtonDisabled: {
     backgroundColor: '#D1D5DB',
   },
-  loadingContainer: {
+  listeningIndicator: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 30,
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginTop: 10,
-  },
-  responseSection: {
-    marginBottom: 30,
-  },
-  responseTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 10,
-  },
-  responseCard: {
-    backgroundColor: '#F8FAFC',
+    justifyContent: 'center',
+    marginTop: 8,
+    paddingVertical: 8,
+    backgroundColor: '#F0FDF4',
     borderRadius: 12,
-    padding: 15,
-    borderLeftWidth: 4,
-    borderLeftColor: '#22C55E',
   },
-  responseText: {
-    fontSize: 16,
-    color: '#374151',
-    lineHeight: 24,
-  },
-  quickActions: {
-    marginTop: 20,
-  },
-  quickActionsTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 15,
-  },
-  quickActionButton: {
-    backgroundColor: '#F9FAFB',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    marginBottom: 10,
-  },
-  quickActionText: {
+  listeningText: {
     fontSize: 14,
-    color: '#374151',
+    color: '#22C55E',
+    marginLeft: 8,
+    fontWeight: '600',
   },
 });
 

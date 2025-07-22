@@ -67,6 +67,13 @@ export const translations = {
     tomatoDiseases: "Tomato diseases",
     wheatPrices: "Wheat prices",
     governmentSchemes: "Government schemes",
+    welcomeMessage: "Hello! I'm your AI farming assistant. How can I help you today?",
+    typeMessage: "Type your message...",
+    aiTyping: "AI is typing...",
+    onlineStatus: "Online",
+    copied: "Copied",
+    messageCopied: "Message copied to clipboard",
+    errorMessage: "Sorry, I encountered an error. Please try again.",
     
     // Crop Health Screen
     identifyCropProblem: "Identify Crop Problem",
@@ -294,6 +301,13 @@ export const translations = {
     tomatoDiseases: "ಟೊಮೇಟೊ ರೋಗಗಳು",
     wheatPrices: "ಗೋಧಿ ಬೆಲೆಗಳು",
     governmentSchemes: "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು",
+    welcomeMessage: "ನಮಸ್ಕಾರ! ನಾನು ನಿಮ್ಮ AI ಕೃಷಿ ಸಹಾಯಕ. ಇಂದು ನಾನು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಹುದು?",
+    typeMessage: "ನಿಮ್ಮ ಸಂದೇಶವನ್ನು ಟೈಪ್ ಮಾಡಿ...",
+    aiTyping: "AI ಟೈಪ್ ಮಾಡುತ್ತಿದೆ...",
+    onlineStatus: "ಆನ್‌ಲೈನ್",
+    copied: "ಕಾಪಿ ಮಾಡಲಾಗಿದೆ",
+    messageCopied: "ಸಂದೇಶವನ್ನು ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ಗೆ ಕಾಪಿ ಮಾಡಲಾಗಿದೆ",
+    errorMessage: "ಕ್ಷಮಿಸಿ, ನನಗೆ ದೋಷ ಎದುರಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
     
     // Crop Health Screen
     identifyCropProblem: "ಬೆಳೆ ಸಮಸ್ಯೆಯನ್ನು ಗುರುತಿಸಿ",
@@ -454,6 +468,13 @@ export const translations = {
     tomatoDiseases: "टमाटर के रोग",
     wheatPrices: "गेहूं की कीमतें",
     governmentSchemes: "सरकारी योजनाएं",
+    welcomeMessage: "नमस्ते! मैं आपका AI कृषि सहायक हूं। आज मैं आपकी कैसे मदद कर सकता हूं?",
+    typeMessage: "अपना संदेश टाइप करें...",
+    aiTyping: "AI टाइप कर रहा है...",
+    onlineStatus: "ऑनलाइन",
+    copied: "कॉपी किया गया",
+    messageCopied: "संदेश क्लिपबोर्ड में कॉपी किया गया",
+    errorMessage: "क्षमा करें, मुझे एक त्रुटि का सामना करना पड़ा। कृपया पुनः प्रयास करें।",
     
     // Crop Health Screen
     identifyCropProblem: "फसल की समस्या की पहचान करें",
