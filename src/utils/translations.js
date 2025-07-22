@@ -82,6 +82,22 @@ export const translations = {
     instruction2: "• Focus on affected plant parts",
     instruction3: "• Include leaves, stems, or fruits showing symptoms",
     instruction4: "• Avoid blurry or dark images",
+    instruction5: "• Add specific questions for better diagnosis",
+    
+    // Question Input
+    askSpecificQuestion: "Ask a Specific Question",
+    questionOptional: "Optional: Ask about specific symptoms or concerns",
+    addQuestion: "Add Question",
+    typeYourQuestion: "Type your question about the plant problem...",
+    tapToSpeak: "Tap to speak your question",
+    listening: "Listening...",
+    clear: "Clear",
+    analyzeWithQuestion: "Analyze with Question",
+    analyzeImage: "Analyze Image",
+    yourQuestion: "Your Question",
+    editQuestion: "Edit Question",
+    basedOnQuestion: "Based on your question",
+    analyzingWithQuestion: "Analyzing your crop and considering your specific question",
     
     // Market Prices Screen
     marketPrices: "Market Prices",
@@ -293,6 +309,22 @@ export const translations = {
     instruction2: "• ಪೀಡಿತ ಸಸ್ಯದ ಭಾಗಗಳ ಮೇಲೆ ಗಮನ ಕೇಂದ್ರಿಸಿ",
     instruction3: "• ರೋಗಲಕ್ಷಣಗಳನ್ನು ತೋರಿಸುವ ಎಲೆಗಳು, ಕಾಂಡಗಳು ಅಥವಾ ಹಣ್ಣುಗಳನ್ನು ಸೇರಿಸಿ",
     instruction4: "• ಮಸುಕಾದ ಅಥವಾ ಗಾಢವಾದ ಚಿತ್ರಗಳನ್ನು ತಪ್ಪಿಸಿ",
+    instruction5: "• ಉತ್ತಮ ನಿದಾನಕ್ಕಾಗಿ ನಿರ್ದಿಷ್ಟ ಪ್ರಶ್ನೆಗಳನ್ನು ಸೇರಿಸಿ",
+    
+    // Question Input
+    askSpecificQuestion: "ನಿರ್ದಿಷ್ಟ ಪ್ರಶ್ನೆ ಕೇಳಿ",
+    questionOptional: "ಐಚ್ಛಿಕ: ನಿರ್ದಿಷ್ಟ ರೋಗಲಕ್ಷಣಗಳು ಅಥವಾ ಕಾಳಜಿಗಳ ಬಗ್ಗೆ ಕೇಳಿ",
+    addQuestion: "ಪ್ರಶ್ನೆ ಸೇರಿಸಿ",
+    typeYourQuestion: "ಸಸ್ಯದ ಸಮಸ್ಯೆಯ ಬಗ್ಗೆ ನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ...",
+    tapToSpeak: "ನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು ಮಾತನಾಡಲು ಟ್ಯಾಪ್ ಮಾಡಿ",
+    listening: "ಕೇಳುತ್ತಿದೆ...",
+    clear: "ತೆರವುಗೊಳಿಸಿ",
+    analyzeWithQuestion: "ಪ್ರಶ್ನೆಯೊಂದಿಗೆ ವಿಶ್ಲೇಷಿಸಿ",
+    analyzeImage: "ಚಿತ್ರವನ್ನು ವಿಶ್ಲೇಷಿಸಿ",
+    yourQuestion: "ನಿಮ್ಮ ಪ್ರಶ್ನೆ",
+    editQuestion: "ಪ್ರಶ್ನೆಯನ್ನು ಸಂಪಾದಿಸಿ",
+    basedOnQuestion: "ನಿಮ್ಮ ಪ್ರಶ್ನೆಯ ಆಧಾರದ ಮೇಲೆ",
+    analyzingWithQuestion: "ನಿಮ್ಮ ಬೆಳೆಯನ್ನು ವಿಶ್ಲೇಷಿಸುತ್ತಿದೆ ಮತ್ತು ನಿಮ್ಮ ನಿರ್ದಿಷ್ಟ ಪ್ರಶ್ನೆಯನ್ನು ಪರಿಗಣಿಸುತ್ತಿದೆ",
     
     // Market Prices Screen
     marketPrices: "ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು",
@@ -437,6 +469,22 @@ export const translations = {
     instruction2: "• प्रभावित पौधे के हिस्सों पर ध्यान दें",
     instruction3: "• लक्षण दिखाने वाले पत्ते, तने या फल शामिल करें",
     instruction4: "• धुंधली या अंधेरी छवियों से बचें",
+    instruction5: "• बेहतर निदान के लिए विशिष्ट प्रश्न जोड़ें",
+    
+    // Question Input
+    askSpecificQuestion: "विशिष्ट प्रश्न पूछें",
+    questionOptional: "वैकल्पिक: विशिष्ट लक्षणों या चिंताओं के बारे में पूछें",
+    addQuestion: "प्रश्न जोड़ें",
+    typeYourQuestion: "पौधे की समस्या के बारे में अपना प्रश्न टाइप करें...",
+    tapToSpeak: "अपना प्रश्न बोलने के लिए टैप करें",
+    listening: "सुन रहा है...",
+    clear: "साफ़ करें",
+    analyzeWithQuestion: "प्रश्न के साथ विश्लेषण करें",
+    analyzeImage: "छवि का विश्लेषण करें",
+    yourQuestion: "आपका प्रश्न",
+    editQuestion: "प्रश्न संपादित करें",
+    basedOnQuestion: "आपके प्रश्न के आधार पर",
+    analyzingWithQuestion: "आपकी फसल का विश्लेषण कर रहे हैं और आपके विशिष्ट प्रश्न पर विचार कर रहे हैं",
     
     // Market Prices Screen
     marketPrices: "बाजार की कीमतें",
